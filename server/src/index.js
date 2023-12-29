@@ -3,10 +3,13 @@ import { config } from "dotenv";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { unlink } from "node:fs";
+import { PrismaClient } from "@prisma/client";
 config();
 
 const app = express();
+const prisma = new PrismaClient();
 const PORT = process.env.PORT;
+
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -30,14 +33,29 @@ cloudinary.config({
 app.post("/api/file", upload.single("file"), async (req, res) => {
   console.log(req.body, req.file);
   const response = await cloudinary.uploader.upload(req.file.path);
-  // Assuming that 'path/file.txt' is a regular file.
+  await prisma.file.create({
+    data : {
+      fileURL : response.url
+    }
+  })
+  const allFiles = await prisma.file.findMany();
+  console.dir(allFiles, { depth: null });
   unlink(req.file.path, (err) => {
     if (err) throw err;
-        console.log("path/file.txt was deleted");
-    });
+    console.log("path/file.txt was deleted");
+  });
   res.send(response.url);
 });
 
 app.listen(PORT, () => {
   console.log(`server listening at port : ${PORT}`);
 });
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received. Closing server, disconnecting from Prisma, and exiting...');
+  await prisma.$disconnect().then(()=>console.log('prisma disconnected'))
+  
+  process.exit(0);
+
+});
+

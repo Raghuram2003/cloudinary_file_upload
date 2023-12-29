@@ -1,2 +1,6 @@
 node_modules
 .env
+/prisma/.env*
+/prisma/client/
+/prisma/*.db
+/prisma/schema.prisma.lock
