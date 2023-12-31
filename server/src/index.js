@@ -33,7 +33,7 @@ cloudinary.config({
 app.post("/api/file", upload.single("file"), async (req, res) => {
   console.log(req.body, req.file);
   const response = await cloudinary.uploader.upload(req.file.path);
-  await prisma.file.create({
+  const newFile = await prisma.file.create({
     data : {
       fileURL : response.url
     }
@@ -44,8 +44,13 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
     if (err) throw err;
     console.log("path/file.txt was deleted");
   });
-  res.send(response.url);
+  res.send(newFile);
 });
+
+app.get("/api/images",async (req,res)=>{
+  const allFiles = await prisma.file.findMany();
+  res.send(allFiles);
+})
 
 app.listen(PORT, () => {
   console.log(`server listening at port : ${PORT}`);
