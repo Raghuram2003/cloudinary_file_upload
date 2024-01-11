@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({storage });
 
 cloudinary.config({
   cloud_name: process.env.cloud_name,
@@ -31,7 +31,7 @@ cloudinary.config({
 });
 
 app.post("/api/file", upload.single("file"), async (req, res) => {
-  console.log(req.body, req.file);
+  try{console.log(req.body, req.file);
   const response = await cloudinary.uploader.upload(req.file.path);
   const newFile = await prisma.file.create({
     data : {
@@ -44,7 +44,12 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
     if (err) throw err;
     console.log("path/file.txt was deleted");
   });
-  res.send(newFile);
+  res.send(newFile);}
+  catch(err){
+    console.error(err)
+  }
+
+
 });
 
 app.get("/api/images",async (req,res)=>{
@@ -59,8 +64,6 @@ app.listen(PORT, () => {
 process.on('SIGINT', async () => {
   console.log('SIGINT received. Closing server, disconnecting from Prisma, and exiting...');
   await prisma.$disconnect().then(()=>console.log('prisma disconnected'))
-  
   process.exit(0);
-
 });
 
