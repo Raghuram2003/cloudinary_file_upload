@@ -41,9 +41,10 @@ function App() {
               src={image.fileURL}
               key={image.id}
               alt={`Image ${image.id}`}
-              className="m-2"
+              className="m-2 w-1/2"
             />
-          ))}
+          )
+          )}
         </div>
       )}
     </div>
